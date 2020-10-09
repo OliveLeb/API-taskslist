@@ -1,14 +1,20 @@
 {
-  "name": "guitarestore_server",
+  "name": "monpetitplanning",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "dependencies": {
     "@hapi/hapi": "^20.0.1",
-    "dotenv": "^8.2.0"
+    "@hapi/hoek": "^9.1.0",
+    "dotenv": "^8.2.0",
+    "pg": "^8.4.1"
+  },
+  "engines": {
+    "node": "12.14.1"
   },
   "devDependencies": {},
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
