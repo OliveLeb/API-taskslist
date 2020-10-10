@@ -4,6 +4,7 @@ const hapi = require('@hapi/hapi');
 const dotenv = require('dotenv');
 const routesHome = require('./routes');
 const routesUsers = require('./routes/users.js');
+const routeTasks = require('./routes/tasks');
 dotenv.config();
 
 // CREATE SERVER + IMPORT ROUTES
@@ -15,6 +16,7 @@ const createServer = () => {
 
   server.route(routesHome);
   server.route(routesUsers);
+  server.route(routeTasks);
 
   return server;
 };

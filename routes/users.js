@@ -60,8 +60,15 @@ const updateUser = {
     method: 'PUT',
     path: '/users/{id}',
     handler : (request, h) => {
-        return 'Update user';
+      const user = request.payload;
+      //await db.query('')
+      return 'User updated !';
     },
+    options: {
+      validate: {
+        payload: userSchema
+      }
+    }
 };
 
 const deleteUser = {
@@ -69,7 +76,7 @@ const deleteUser = {
     path: '/users/{id}',
     handler : async (request, h) => {
       const id = request.params.id;
-      await db.query(`DELETE FROM users WHERE id=${id}`);    
+      await db.query(`DELETE FROM users USING tasks WHERE id=${id}`);    
       return 'User deleted successfully !';
     },
 };
