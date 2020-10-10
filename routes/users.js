@@ -1,6 +1,7 @@
 'use strict';
 const Joi = require('joi');
 const db = require('../db');
+const bcrypt = require('bcrypt');
 
   
 
@@ -35,11 +36,20 @@ const getOneUser = {
 const createUser = {
     method: 'POST',
     path: '/users',
-    handler : (request, h) => {
+    handler : async (request, h) => {
         const user = request.payload;
-        db.query(`INSERT INTO users(firstname, lastname, email, password, image, role) 
-        VALUES ('${user.firstname}','${user.lastname}','${user.email}','${user.password}','${user.image}','${user.role}')`);
-        return user;
+        
+        await bcrypt.genSalt(10)
+        .then(salt => {
+          bcrypt.hash(user.password,salt)
+          .then(hash => {
+            db.query(`INSERT INTO users(firstname, lastname, email, password, image, role) 
+            VALUES ('${user.firstname}','${user.lastname}','${user.email}','${hash}','${user.image}','${user.role}')`);            
+          });
+        });
+
+        return 'User created successfully !';
+        
     },
     options: {
         validate: {
