@@ -17,7 +17,7 @@ const getUsers =  {
     method: 'GET',
     path: '/users',
     handler : async (request,reply) => {
-     const {rows} = await db.query('SELECT id,firstname,lastname FROM users');
+     const {rows} = await db.query('SELECT id,firstname,lastname,email,password,image,role FROM users');
      return rows;
     },
 };
@@ -27,7 +27,7 @@ const getOneUser = {
     path: '/users/{id}',
     handler : async (request, h) => {
       const id= request.params.id;
-      const {rows} = await db.query(`SELECT id,firstname,lastname FROM users WHERE id=${id}`);
+      const {rows} = await db.query(`SELECT id,firstname,lastname,email,password,image,role FROM users WHERE id=${id}`);
       return rows[0];
     },
 };
@@ -36,8 +36,9 @@ const createUser = {
     method: 'POST',
     path: '/users',
     handler : (request, h) => {
-        //return 'Create user';
         const user = request.payload;
+        db.query(`INSERT INTO users(firstname, lastname, email, password, image, role) 
+        VALUES ('${user.firstname}','${user.lastname}','${user.email}','${user.password}','${user.image}','${user.role}')`);
         return user;
     },
     options: {
@@ -46,9 +47,6 @@ const createUser = {
         }
     }
 };
-
-//client.query(`INSERT INTO users (firstname,lastname,email,password,image,role)
-//VALUES ('','','','','','')`);
 
 const updateUser = {
     method: 'PUT',
