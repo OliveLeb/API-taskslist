@@ -7,7 +7,7 @@ const taskSchema = Joi.object({
     task : Joi.string().required(),
     is_done: Joi.boolean().required(),
     date: Joi.date()
-})
+});
 
 const getTasks = {
     method: 'GET',
@@ -15,19 +15,39 @@ const getTasks = {
     handler : async (request, h) => {
         const {rows} = await db.query('SELECT id,id_user,task,is_done,date,time FROM tasks');
         return rows;
-    }
-}
+    },
+};
 
 const createTask = {
     method: 'POST',
     path: '/task',
     handler : async (request, h) => {
         const task = request.payload;
-        //console.log(task);
-        db.query(`INSERT INTO tasks(id_user, task, is_done, date, time) 
+        await db.query(`INSERT INTO tasks(id_user, task, is_done, date, time) 
         VALUES ('${task.id_user}','${task.task}','${task.is_done}',${task.date},${task.time})`);
         return task;
-    }
+    },
 };
 
-module.exports = [getTasks,createTask];
+const deleteTask = {
+    method: 'DELETE',
+    path: '/task/{id}',
+    handler : async (request, h) => {
+        const id = request.params.id;
+        await db.query(`DELETE FROM tasks WHERE id=${id}`);
+        return 'Task deleted !';
+    },
+};
+
+// DELETE ALL TASKS FROM ONE USER
+const deleteUserTasks = {
+    method: 'DELETE',
+    path: '/users-tasks/{id}',
+    handler : async (request, h) => {
+        const id = request.params.id;
+        await db.query(`DELETE FROM tasks WHERE id_user=${id}`);
+        return 'Tasks deleted !';
+    },
+}
+
+module.exports = [getTasks,createTask,deleteTask,deleteUserTasks];

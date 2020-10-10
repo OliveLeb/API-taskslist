@@ -76,7 +76,7 @@ const deleteUser = {
     path: '/users/{id}',
     handler : async (request, h) => {
       const id = request.params.id;
-      await db.query(`DELETE FROM users USING tasks WHERE id=${id}`);    
+      await db.query(`DELETE FROM users WHERE id=${id}`);    
       return 'User deleted successfully !';
     },
 };
