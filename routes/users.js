@@ -37,8 +37,7 @@ const createUser = {
     method: 'POST',
     path: '/users',
     handler : async (request, h) => {
-        const user = request.payload;
-        
+        const user = request.payload;        
         await bcrypt.genSalt(10)
         .then(salt => {
           bcrypt.hash(user.password,salt)
@@ -48,8 +47,7 @@ const createUser = {
           });
         });
 
-        return 'User created successfully !';
-        
+        return 'User created successfully !';        
     },
     options: {
         validate: {
@@ -69,8 +67,10 @@ const updateUser = {
 const deleteUser = {
     method: 'DELETE',
     path: '/users/{id}',
-    handler : (request, h) => {
-        return 'Delete user';
+    handler : async (request, h) => {
+      const id = request.params.id;
+      await db.query(`DELETE FROM users WHERE id=${id}`);    
+      return 'User deleted successfully !';
     },
 };
 
