@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@hapi/basic": "^6.0.0",
+    "@hapi/cookie": "^11.0.2",
     "@hapi/hapi": "^20.0.1",
     "@hapi/hoek": "^9.1.0",
     "bcrypt": "^5.0.0",
@@ -12,6 +13,7 @@
     "hapi-auth-jwt2": "^10.2.0",
     "joi": "^17.2.1",
     "jsonwebtoken": "^8.5.1",
+    "jws": "^4.0.0",
     "pg": "^8.4.1"
   },
   "engines": {

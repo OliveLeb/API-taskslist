@@ -1,22 +1,26 @@
 'use strict';
 
+const Joi = require('joi');
 const db = require('../db');
 const bcrypt = require('bcrypt');
-const Joi = require('joi');
-const jwt = require('jsonwebtoken');
+const verifyCredentials = require('../utils/userFunctions').verifyCredentials;
+const createToken = require('../utils/token');
+const verifyUniqueEmail = require('../utils/userFunctions').verifyUniqueEmail;
 
-/*
-const validate = async (request, email, password) => {
-    const user = users[usernamme];
-    if(!user) {
-        return {credentials: null, isValid: false};
-    }
-}*/
 
 const authSchema = Joi.object({
     email: Joi.string().email({tlds:{allow:true}}).required(),
     password: Joi.string().min(6).max(16).required()
 })
+
+const userSchema = Joi.object({
+    firstname: Joi.string().min(3).max(50).required(),
+    lastname: Joi.string().min(3).max(50).required(),
+    email: Joi.string().email({tlds:{allow:true}}).required(),
+    password : Joi.string().min(6).max(16).required(),
+    image: Joi.string(),
+    admin: Joi.boolean().required()
+});
 
 const auth = {
     method: 'POST',
@@ -25,33 +29,61 @@ const auth = {
         validate: {
             payload: authSchema
         },
-        auth:false
+        auth:false,
+        pre: [
+            { assign: 'user' ,method: verifyCredentials }
+        ],    
+    
+        handler: async (request, h) => {
+
+            const {user} = request.pre;            
+            const token = createToken(user);
+            return token;
+        
+        }
     },
-    handler: async (request, h) => {
-
-        const user = request.payload;
-        //const user = request.auth;
-        //console.log(user);
-
-        /*if(!user) {
-            return {credentials: null, isValid: false};
-        }*/
-
-        const { rows } = await db.query(`SELECT id,firstname,lastname,email,password FROM users WHERE email='${user.email}'`);
-        if(rows.length === 0) return 'Email not found.';
-
-        const isValid = await bcrypt.compare(user.password,rows[0].password);
-        //if(!isValid)  return 'Invalid password.';
-
-        const credentials = {email:rows[0].email};
-        //return {isValid, credentials};
-
-        const token = jwt.sign(credentials,process.env.TOKEN_SECRET);
-        //return header('auth-token',token);
-        return token;
-       
-   
-    }
 }
 
-module.exports = [auth];
+
+const createUser = {
+    method: 'POST',
+    path: '/register',
+    options: {
+      validate: {
+            payload : userSchema,
+            failAction(request, h, err) {
+              throw err;
+            },
+            options: {
+              abortEarly: false
+            }
+        },
+        auth: false,
+      pre: [
+        {assign:'user', method: verifyUniqueEmail }
+      ],
+
+      handler : async (request, h) => {
+
+          const {user} = request.pre;
+          if(typeof(user) === 'string' || user === null) return user;
+     
+
+          // IF NOT HASH PASSWORD AND STORE USER IN DB
+          await bcrypt.genSalt(10)
+          .then(salt => {
+            bcrypt.hash(user.password,salt)
+            .then(hash => {
+              db.query(`INSERT INTO users(firstname, lastname, email, password, image, admin) 
+              VALUES ('${user.firstname}','${user.lastname}','${user.email}','${hash}','${user.image}','${user.admin}')`);            
+            });
+          });
+          const id_token = createToken(user);
+          return id_token;
+               
+      },
+    }
+  
+};
+
+module.exports = [auth,createUser];
