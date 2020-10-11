@@ -1,4 +1,5 @@
 'use strict';
+
 const Joi = require('joi');
 const db = require('../db');
 
@@ -17,6 +18,16 @@ const getTasks = {
         return rows;
     },
 };
+
+const getOneTask = {
+    method: 'GET',
+    path: '/task/{id}',
+    handler : async (request, h) => {
+        const id = request.params.id;
+        const {rows} = await db.query(`SELECT id,id_user,task,is_done,date,time FROM tasks WHERE id=${id}`);
+        return rows;
+    }
+}
 
 const createTask = {
     method: 'POST',
@@ -50,4 +61,4 @@ const deleteUserTasks = {
     },
 }
 
-module.exports = [getTasks,createTask,deleteTask,deleteUserTasks];
+module.exports = [getTasks,getOneTask,createTask,deleteTask,deleteUserTasks];

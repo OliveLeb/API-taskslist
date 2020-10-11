@@ -9,7 +9,7 @@ const userSchema = Joi.object({
     firstname: Joi.string().min(3).max(50).required(),
     lastname: Joi.string().min(3).max(50).required(),
     email: Joi.string().email({tlds:{allow:true}}).required(),
-    password : Joi.string().required(),
+    password : Joi.string().min(6).max(16).required(),
     image: Joi.string(),
     role: Joi.string().valid('admin','user').required()
 });
@@ -21,6 +21,9 @@ const getUsers =  {
      const {rows} = await db.query('SELECT id,firstname,lastname,email,password,image,role FROM users');
      return rows;
     },
+    options: {
+      auth: false
+    }
 };
 
 const getOneUser = {
@@ -51,8 +54,12 @@ const createUser = {
     },
     options: {
         validate: {
-            payload : userSchema
-        }
+            payload : userSchema,
+            failAction(request, h, err) {
+              throw err;
+            }
+        },
+        auth: false
     }
 };
 
