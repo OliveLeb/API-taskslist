@@ -6,6 +6,7 @@ const routesHome = require('./routes');
 const routesUsers = require('./routes/users');
 const routeTasks = require('./routes/tasks');
 const routeAuth = require('./routes/auth');
+const validate = require('./auth');
 dotenv.config();
 
 // CREATE SERVER + IMPORT ROUTES
@@ -23,6 +24,7 @@ const createServer = () => {
   return server;
 };
 
+/*
 const validate = async (request,email, password)=> {
   const user = users[email];
   if(!user){
@@ -32,19 +34,19 @@ const validate = async (request,email, password)=> {
   const credentials = {id: user.id, firstname: user.firstname, lastname: user.lastname};
 
   return {isValid, credentials};
-};
+};*/
 
 // START SERVER 
 const init = async () => {
 
   const server = await createServer();
   await server.register(require('hapi-auth-jwt2'));
-  //await server.register(require('@hapi/basic'));
-  server.auth.strategy('jwt','jwt',{
+  await server.register(require('@hapi/basic'));
+  server.auth.strategy('simple','jwt',{
     key: process.env.TOKEN_SECRET,
     validate
   });
-  server.auth.default('jwt');
+  server.auth.default('simple');
   await server.start();
   console.log('Server running on %s', server.info.uri);
 };

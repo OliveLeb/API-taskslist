@@ -2,6 +2,8 @@
 const Joi = require('joi');
 const db = require('../db');
 const bcrypt = require('bcrypt');
+const createToken = require('../utils/token');
+const verifyUniqueEmail = require('../utils/userFunctions').verifyUniqueEmail;
 
   
 
@@ -21,9 +23,9 @@ const getUsers =  {
      const {rows} = await db.query('SELECT id,firstname,lastname,email,password,image,role FROM users');
      return rows;
     },
-    options: {
-      auth: false
-    }
+   options: {
+     auth:false
+    },
 };
 
 const getOneUser = {
@@ -39,28 +41,42 @@ const getOneUser = {
 const createUser = {
     method: 'POST',
     path: '/users',
-    handler : async (request, h) => {
-        const user = request.payload;        
-        await bcrypt.genSalt(10)
-        .then(salt => {
-          bcrypt.hash(user.password,salt)
-          .then(hash => {
-            db.query(`INSERT INTO users(firstname, lastname, email, password, image, role) 
-            VALUES ('${user.firstname}','${user.lastname}','${user.email}','${hash}','${user.image}','${user.role}')`);            
-          });
-        });
-
-        return 'User created successfully !';        
-    },
     options: {
-        validate: {
+      validate: {
             payload : userSchema,
             failAction(request, h, err) {
               throw err;
+            },
+            options: {
+              abortEarly: false
             }
         },
-        auth: false
+        auth: false,
+      pre: [
+        {assign:'user', method: verifyUniqueEmail }
+      ],
+
+      handler : async (request, res) => {
+
+          const {user} = request.pre;
+        
+
+          // IF NOT HASH PASSWORD AND STORE USER IN DB
+          await bcrypt.genSalt(10)
+          .then(salt => {
+            bcrypt.hash(user.password,salt)
+            .then(hash => {
+              db.query(`INSERT INTO users(firstname, lastname, email, password, image, role) 
+              VALUES ('${user.firstname}','${user.lastname}','${user.email}','${hash}','${user.image}','${user.role}')`);            
+            });
+          });
+          const id_token = createToken(user);
+          return id_token;
+          //return 'User created successfully !';   
+        //return {id_token: createToken(user)}.code(201);     
+      },
     }
+  
 };
 
 const updateUser = {
@@ -81,6 +97,9 @@ const updateUser = {
 const deleteUser = {
     method: 'DELETE',
     path: '/users/{id}',
+    options:{
+      auth:false
+    },
     handler : async (request, h) => {
       const id = request.params.id;
       await db.query(`DELETE FROM users WHERE id=${id}`);    
