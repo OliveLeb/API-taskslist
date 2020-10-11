@@ -68,7 +68,9 @@ const deleteUser = {
     method: 'DELETE',
     path: '/users/{id}',
     options:{
-      auth:false
+      auth:{
+        strategy:'jwt'
+      }
     },
     handler : async (request, h) => {
       const id = request.params.id;

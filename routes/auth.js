@@ -38,8 +38,9 @@ const auth = {
 
             const {user} = request.pre;            
             const token = createToken(user);
-            return token;
-        
+            
+            return h.response('success').header('auth-token', token);
+
         }
     },
 }
@@ -59,6 +60,7 @@ const createUser = {
             }
         },
         auth: false,
+        // CHECK IF EMAIL ALREADY EXIST
       pre: [
         {assign:'user', method: verifyUniqueEmail }
       ],
@@ -69,7 +71,7 @@ const createUser = {
           if(typeof(user) === 'string' || user === null) return user;
      
 
-          // IF NOT HASH PASSWORD AND STORE USER IN DB
+          // HASH PASSWORD AND STORE USER IN DB
           await bcrypt.genSalt(10)
           .then(salt => {
             bcrypt.hash(user.password,salt)
