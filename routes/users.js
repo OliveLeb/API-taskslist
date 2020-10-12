@@ -18,7 +18,8 @@ const getUsers =  {
     path: '/users',
     config: {
      auth:{
-       strategy:'jwt'
+       strategy:'jwt',
+       scope: 'admin'
      },
     },
     handler : async (request,reply) => {

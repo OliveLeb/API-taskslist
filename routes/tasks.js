@@ -2,12 +2,14 @@
 
 const Joi = require('joi');
 const db = require('../db');
+const decodeToken = require('../utils/token').decodeToken;
 
 const taskSchema = Joi.object({
     id_user: Joi.number().required(),
     task : Joi.string().required(),
     is_done: Joi.boolean().required(),
-    date: Joi.date()
+    date: Joi.date(),
+    time: Joi.string()
 });
 
 const getTasks = {
@@ -29,13 +31,32 @@ const getOneTask = {
     }
 }
 
+const getTasksByUserId = {
+    method: 'GET',
+    path: '/mytasks',
+    options: {
+        auth: 'jwt',
+        pre: [
+            { assign:'decodedToken', method: decodeToken }
+        ],    
+        handler: async (request, h) => {
+            
+            const {decodedToken} = request.pre;
+            const id = decodedToken.id;
+            const {rows} = await db.query(`SELECT id,id_user,task,is_done FROM tasks WHERE id_user='${id}'`);
+            return rows;
+            
+        }
+    },
+}
+
 const createTask = {
     method: 'POST',
     path: '/task',
     handler : async (request, h) => {
         const task = request.payload;
         await db.query(`INSERT INTO tasks(id_user, task, is_done, date, time) 
-        VALUES ('${task.id_user}','${task.task}','${task.is_done}',${task.date},${task.time})`);
+        VALUES ('${task.id_user}','${task.task}','${task.is_done}','${task.date}','${task.time}')`);
         return task;
     },
 };
@@ -61,4 +82,4 @@ const deleteUserTasks = {
     },
 }
 
-module.exports = [getTasks,getOneTask,createTask,deleteTask,deleteUserTasks];
+module.exports = [getTasks,getOneTask,getTasksByUserId,createTask,deleteTask,deleteUserTasks];

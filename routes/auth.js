@@ -4,7 +4,7 @@ const Joi = require('joi');
 const db = require('../db');
 const bcrypt = require('bcrypt');
 const verifyCredentials = require('../utils/userFunctions').verifyCredentials;
-const createToken = require('../utils/token');
+const createToken = require('../utils/token').createToken;
 const verifyUniqueEmail = require('../utils/userFunctions').verifyUniqueEmail;
 
 
@@ -71,7 +71,7 @@ const createUser = {
           if(typeof(user) === 'string' || user === null) return user;
      
 
-          // HASH PASSWORD AND STORE USER IN DB
+          // HASH PASSWORD THEN STORE USER IN DB
           await bcrypt.genSalt(10)
           .then(salt => {
             bcrypt.hash(user.password,salt)
